@@ -27,6 +27,8 @@ Plug 'davidhalter/jedi-vim'  " Jedi for Python autocompletion
 
 " C/C++ Development
 Plug 'octol/vim-cpp-enhanced-highlight' " Enhanced C/C++ syntax highlighting
+Plug 'vim-jp/vim-cpp'
+Plug 'rip-rip/clang_complete'
 
 " Rust Development
 Plug 'rust-lang/rust.vim'               " Rust syntax highlighting and auto-formatting
