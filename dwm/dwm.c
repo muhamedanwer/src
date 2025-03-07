@@ -464,41 +464,63 @@ attachstack(Client *c)
 void
 buttonpress(XEvent *e)
 {
-	unsigned int i, x, click;
-	Arg arg = {0};
-	Client *c;
-	Monitor *m;
-	XButtonPressedEvent *ev = &e->xbutton;
+    unsigned int i, x, click;
+    Arg arg = {0};
+    Client *c;
+    Monitor *m;
+    XButtonPressedEvent *ev = &e->xbutton;
 
-	click = ClkRootWin;
-	/* focus monitor if necessary */
-	if ((m = wintomon(ev->window)) && m != selmon) {
-		unfocus(selmon->sel, 1);
-		selmon = m;
-		focus(NULL);
-	}
-	if (ev->window == selmon->barwin) {
-		i = x = 0;
-		do
-			x += TEXTW(tagsalt[i]);
-		while (ev->x >= x && ++i < LENGTH(tagsalt));
-		if (i < LENGTH(tagsalt)) {
-			click = ClkTagBar;
-			arg.ui = 1 << i;
-		} else if (ev->x < x + TEXTW(selmon->ltsymbol))
-			click = ClkLtSymbol;
-		else
-			click = ClkStatusText;
-	} else if ((c = wintoclient(ev->window))) {
-		focus(c);
-		restack(selmon);
-		XAllowEvents(dpy, ReplayPointer, CurrentTime);
-		click = ClkClientWin;
-	}
-	for (i = 0; i < LENGTH(buttons); i++)
-		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
-		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state))
-			buttons[i].func(click == ClkTagBar && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
+    click = ClkRootWin;
+    /* Focus monitor if necessary */
+    if ((m = wintomon(ev->window)) && m != selmon) {
+        unfocus(selmon->sel, 1);
+        selmon = m;
+        focus(NULL);
+    }
+
+    if (ev->window == selmon->barwin) {
+        x = 0;
+        /* Calculate the starting x position for tags */
+        unsigned int tag_width = 0;
+        for (i = 0; i < LENGTH(tagsalt); i++) {
+            tag_width += TEXTW(tagsalt[i]);
+        }
+        int center_x = (m->ww - tag_width) / 2;
+
+        x = center_x;
+        for (i = 0; i < LENGTH(tagsalt); i++) {
+            int tag_w = TEXTW(tagsalt[i]);
+            if (ev->x >= x && ev->x < x + tag_w) {
+                click = ClkTagBar;
+                arg.ui = 1 << i;
+                break;
+            }
+            x += tag_w;
+        }
+
+        if (click == ClkTagBar) {
+            /* Handle tag click */
+            // Call your function to switch to the clicked tag
+        } else if (ev->x < x + TEXTW(selmon->ltsymbol)) {
+            click = ClkLtSymbol;
+        } else if (ev->x > selmon->ww - (int)TEXTW(stext)) {
+            click = ClkStatusText;
+        } else {
+            click = ClkClientWin;
+        }
+    } else if ((c = wintoclient(ev->window))) {
+        focus(c);
+        restack(selmon);
+        XAllowEvents(dpy, ReplayPointer, CurrentTime);
+        click = ClkClientWin;
+    }
+
+    for (i = 0; i < LENGTH(buttons); i++)
+        if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
+        && CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state))
+            buttons[i].func(click == ClkTagBar && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
+
+
 }
 
 void
@@ -818,53 +840,53 @@ dirtomon(int dir)
 void
 drawbar(Monitor *m)
 {
-	int x, w, tw = 0, stw = 0, wdelta;
-	int boxs = drw->fonts->h / 9;
-	int boxw = drw->fonts->h / 6 + 2;
-	unsigned int i, occ = 0, urg = 0;
-	Client *c;
+     int x, w, tw = 0;
+    int boxs = drw->fonts->h / 9;
+    int boxw = drw->fonts->h / 6 + 2;
+    unsigned int i, occ = 0, urg = 0;
+    
 
-	if (!m->showbar)
-		return;
+    if (!m->showbar)
+        return;
 
-	if(showsystray && m == systraytomon(m) && !systrayonleft)
-		stw = getsystraywidth();
+    /* Draw layout symbol on the left */
+    w = TEXTW(m->ltsymbol);
+    drw_setscheme(drw, scheme[SchemeNorm]);
+    drw_text(drw, 0, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
 
-	/* draw status first so it can be overdrawn by tags later */
-	if (m == selmon) { /* status is only drawn on selected monitor */
-		drw_setscheme(drw, scheme[SchemeNorm]);
-		tw = TEXTW(stext) - lrpad / 2 + 2; /* 2px extra right padding */
-		drw_text(drw, m->ww - tw - stw, 0, tw, bh, lrpad / 2 - 2, stext, 0);
-	}
+    x = w; // Update x to the end of layout symbol
 
-	resizebarwin(m);
-	for (c = m->clients; c; c = c->next) {
-		occ |= c->tags;
-		if (c->isurgent)
-			urg |= c->tags;
-	}
-	x = 0;
-	for (i = 0; i < LENGTH(tagsalt); i++) {
-		w = TEXTW(tagsalt[i]);
-		wdelta = selmon->alttag ? abs(TEXTW(tagsalt[i]) - TEXTW(tagsalt[i])) / 2 : 0;
-		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, wdelta + lrpad / 2, (selmon->alttag ? tagsalt[i] : tagsalt[i]), urg & 1 << i);
-		if (occ & 1 << i)
-			drw_rect(drw, x + boxs, boxs, boxw, boxw,
-				m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
-				urg & 1 << i);
-		x += w;
-	}
-	w = TEXTW(m->ltsymbol);
-	drw_setscheme(drw, scheme[SchemeNorm]);
-	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
+    /* Calculate total width of tags and center them */
+    int tag_width = 0;
+    for (i = 0; i < LENGTH(tagsalt); i++) {
+        tag_width += TEXTW(tagsalt[i]);
+    }
+    int center_x = (m->ww - tag_width) / 2;
 
-	if ((w = m->ww - tw - stw - x) > bh) {
-			drw_setscheme(drw, scheme[SchemeNorm]);
-			drw_rect(drw, x, 0, w, bh, 1, 1);
-	}
-	drw_map(drw, m->barwin, 0, 0, m->ww - stw, bh);
-}
+    /* Draw tags centered */
+    x = center_x; // Start x at the centered position
+    for (i = 0; i < LENGTH(tagsalt); i++) {
+        w = TEXTW(tagsalt[i]);
+        drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+        drw_text(drw, x, 0, w, bh, lrpad / 2, tagsalt[i], urg & 1 << i);
+        if (occ & 1 << i)
+            drw_rect(drw, x + boxs, boxs, boxw, boxw,
+                m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
+                urg & 1 << i);
+        x += w;
+    }
+
+    /* Draw status text on the right */
+    if (m == selmon) { /* Status is only drawn on selected monitor */
+        drw_setscheme(drw, scheme[SchemeNorm]);
+        tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
+        drw_text(drw, m->ww - tw, 0, tw, bh, 0, stext, 0);
+    }
+
+    /* Ensure layout symbol, tags, and status text do not overlap */
+    drw_map(drw, m->barwin, 0, 0, m->ww, bh);
+ }
+ 
 
 void
 drawbars(void)
