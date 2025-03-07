@@ -67,17 +67,20 @@ static const struct arg args[] = {
 	/* function format          argument */
 //	{battery_perc, "^b#689d6a^^c#282828^ %s%% bat ",		"BAT0"},
 	//{battery_remaining, "%s",		"BAT0"},
-	{ cpu_perc, "   %s",		NULL },
-	{ ram_perc, " %s%%  ",		NULL },
+//	{ cpu_perc, "   %s",		NULL },
+//	{ ram_perc, " %s%%  ",		NULL },
+	{ cpu_perc, "CPU %3s%% |", NULL    },
+	{ ram_perc, "RAM %2s%% |", NULL    },
 	
 //	{ hostname, "%s ", "wlp2s0"      },
     
-//    { wifi_essid, "%s ", "wlan0"    },
+        { wifi_essid, "%s |", "wlan0"    },
 //    { ipv4, "%s | ", "wlan0"        },
 //	{ battery_perc, "%s%%", "BAT0"   },
 //    { battery_state, "%s | ", "BAT0" },
-	{ datetime, " %s ",  "%H:%M" },
+        { datetime,         " %s  ",      "%F" },
+	{ datetime, " %s |",  "%H:%M" },
 
 
 };
-;
+

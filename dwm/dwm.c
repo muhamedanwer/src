@@ -199,7 +199,6 @@ static unsigned int getsystraywidth();
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
-static void horizontal(Monitor *m);
 static void incnmaster(const Arg *arg);
 static void keypress(XEvent *e);
 static void keyrelease(XEvent *e);
@@ -1118,22 +1117,6 @@ grabkeys(void)
 }
 
 void
-horizontal(Monitor *m)
-{
-	Client *c;
-	unsigned int n, i;
-
-	/* Count windows */
-	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-
-	if(!n)
-		return;
-	else /* Split vertically */
-		for(i = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
-			resize(c, m->wx + i * m->mw / n, m->wy, m->mw / n - (2 * c->bw), m->wh - (2 * c->bw), False);
-}
-
-void
 incnmaster(const Arg *arg)
 {
 	selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag] = MAX(selmon->nmaster + arg->i, 0);
@@ -1244,6 +1227,8 @@ manage(Window w, XWindowAttributes *wa)
 	updatewindowtype(c);
 	updatesizehints(c);
 	updatewmhints(c);
+	c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
+	c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
 	if (!c->isfloating)
