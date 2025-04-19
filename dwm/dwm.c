@@ -53,7 +53,7 @@
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
-#define TAGMASK                 ((1 << LENGTH(tagsalt)) - 1)
+#define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
@@ -145,7 +145,6 @@ struct Monitor {
 	Monitor *next;
 	Window barwin;
 	const Layout *lt[2];
-	unsigned int alttag;
 	Pertag *pertag;
 };
 
@@ -201,7 +200,6 @@ static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
 static void incnmaster(const Arg *arg);
 static void keypress(XEvent *e);
-static void keyrelease(XEvent *e);
 static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
@@ -238,7 +236,6 @@ static Monitor *systraytomon(Monitor *m);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
-static void togglealttag(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
@@ -288,7 +285,6 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 	[Expose] = expose,
 	[FocusIn] = focusin,
 	[KeyPress] = keypress,
-	[KeyRelease] = keyrelease,
 	[MappingNotify] = mappingnotify,
 	[MapRequest] = maprequest,
 	[MotionNotify] = motionnotify,
@@ -310,15 +306,15 @@ static Window root, wmcheckwin;
 
 struct Pertag {
 	unsigned int curtag, prevtag; /* current and previous tag */
-	int nmasters[LENGTH(tagsalt) + 1]; /* number of windows in master area */
-	float mfacts[LENGTH(tagsalt) + 1]; /* mfacts per tag */
-	unsigned int sellts[LENGTH(tagsalt) + 1]; /* selected layouts */
-	const Layout *ltidxs[LENGTH(tagsalt) + 1][2]; /* matrix of tags and layouts indexes  */
-	int showbars[LENGTH(tagsalt) + 1]; /* display bar for the current tag */
+	int nmasters[LENGTH(tags) + 1]; /* number of windows in master area */
+	float mfacts[LENGTH(tags) + 1]; /* mfacts per tag */
+	unsigned int sellts[LENGTH(tags) + 1]; /* selected layouts */
+	const Layout *ltidxs[LENGTH(tags) + 1][2]; /* matrix of tags and layouts indexes  */
+	int showbars[LENGTH(tags) + 1]; /* display bar for the current tag */
 };
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
-struct NumTags { char limitexceeded[LENGTH(tagsalt) > 31 ? -1 : 1]; };
+struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 
 /* function implementations */
 void
@@ -464,63 +460,43 @@ attachstack(Client *c)
 void
 buttonpress(XEvent *e)
 {
-    unsigned int i, x, click;
-    Arg arg = {0};
-    Client *c;
-    Monitor *m;
-    XButtonPressedEvent *ev = &e->xbutton;
+	unsigned int i, x, click;
+	Arg arg = {0};
+	Client *c;
+	Monitor *m;
+	XButtonPressedEvent *ev = &e->xbutton;
 
-    click = ClkRootWin;
-    /* Focus monitor if necessary */
-    if ((m = wintomon(ev->window)) && m != selmon) {
-        unfocus(selmon->sel, 1);
-        selmon = m;
-        focus(NULL);
-    }
-
-    if (ev->window == selmon->barwin) {
-        x = 0;
-        /* Calculate the starting x position for tags */
-        unsigned int tag_width = 0;
-        for (i = 0; i < LENGTH(tagsalt); i++) {
-            tag_width += TEXTW(tagsalt[i]);
-        }
-        int center_x = (m->ww - tag_width) / 2;
-
-        x = center_x;
-        for (i = 0; i < LENGTH(tagsalt); i++) {
-            int tag_w = TEXTW(tagsalt[i]);
-            if (ev->x >= x && ev->x < x + tag_w) {
-                click = ClkTagBar;
-                arg.ui = 1 << i;
-                break;
-            }
-            x += tag_w;
-        }
-
-        if (click == ClkTagBar) {
-            /* Handle tag click */
-            // Call your function to switch to the clicked tag
-        } else if (ev->x < x + TEXTW(selmon->ltsymbol)) {
-            click = ClkLtSymbol;
-        } else if (ev->x > selmon->ww - (int)TEXTW(stext)) {
-            click = ClkStatusText;
-        } else {
-            click = ClkClientWin;
-        }
-    } else if ((c = wintoclient(ev->window))) {
-        focus(c);
-        restack(selmon);
-        XAllowEvents(dpy, ReplayPointer, CurrentTime);
-        click = ClkClientWin;
-    }
-
-    for (i = 0; i < LENGTH(buttons); i++)
-        if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
-        && CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state))
-            buttons[i].func(click == ClkTagBar && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
-
-
+	click = ClkRootWin;
+	/* focus monitor if necessary */
+	if ((m = wintomon(ev->window)) && m != selmon) {
+		unfocus(selmon->sel, 1);
+		selmon = m;
+		focus(NULL);
+	}
+	if (ev->window == selmon->barwin) {
+		i = x = 0;
+		do
+			x += TEXTW(tags[i]);
+		while (ev->x >= x && ++i < LENGTH(tags));
+		if (i < LENGTH(tags)) {
+			click = ClkTagBar;
+			arg.ui = 1 << i;
+		} else if (ev->x < x + TEXTW(selmon->ltsymbol))
+			click = ClkLtSymbol;
+		else if (ev->x > selmon->ww - (int)TEXTW(stext) - getsystraywidth())
+			click = ClkStatusText;
+		else
+			click = ClkStatusText;
+	} else if ((c = wintoclient(ev->window))) {
+		focus(c);
+		restack(selmon);
+		XAllowEvents(dpy, ReplayPointer, CurrentTime);
+		click = ClkClientWin;
+	}
+	for (i = 0; i < LENGTH(buttons); i++)
+		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
+		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state))
+			buttons[i].func(click == ClkTagBar && buttons[i].arg.i == 0 ? &arg : &buttons[i].arg);
 }
 
 void
@@ -770,7 +746,7 @@ createmon(void)
 	m->pertag = ecalloc(1, sizeof(Pertag));
 	m->pertag->curtag = m->pertag->prevtag = 1;
 
-	for (i = 0; i <= LENGTH(tagsalt); i++) {
+	for (i = 0; i <= LENGTH(tags); i++) {
 		m->pertag->nmasters[i] = m->nmaster;
 		m->pertag->mfacts[i] = m->mfact;
 
@@ -840,53 +816,52 @@ dirtomon(int dir)
 void
 drawbar(Monitor *m)
 {
-     int x, w, tw = 0;
-    int boxs = drw->fonts->h / 9;
-    int boxw = drw->fonts->h / 6 + 2;
-    unsigned int i, occ = 0, urg = 0;
-    
+	int x, w, tw = 0, stw = 0;
+	int boxs = drw->fonts->h / 9;
+	int boxw = drw->fonts->h / 6 + 2;
+	unsigned int i, occ = 0, urg = 0;
+	Client *c;
 
-    if (!m->showbar)
-        return;
+	if (!m->showbar)
+		return;
 
-    /* Draw layout symbol on the left */
-    w = TEXTW(m->ltsymbol);
-    drw_setscheme(drw, scheme[SchemeNorm]);
-    drw_text(drw, 0, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
+	if(showsystray && m == systraytomon(m) && !systrayonleft)
+		stw = getsystraywidth();
 
-    x = w; // Update x to the end of layout symbol
+	/* draw status first so it can be overdrawn by tags later */
+	if (m == selmon) { /* status is only drawn on selected monitor */
+		drw_setscheme(drw, scheme[SchemeNorm]);
+		tw = TEXTW(stext) - lrpad / 2 + 2; /* 2px extra right padding */
+		drw_text(drw, m->ww - tw - stw, 0, tw, bh, lrpad / 2 - 2, stext, 0);
+	}
 
-    /* Calculate total width of tags and center them */
-    int tag_width = 0;
-    for (i = 0; i < LENGTH(tagsalt); i++) {
-        tag_width += TEXTW(tagsalt[i]);
-    }
-    int center_x = (m->ww - tag_width) / 2;
+	resizebarwin(m);
+	for (c = m->clients; c; c = c->next) {
+		occ |= c->tags;
+		if (c->isurgent)
+			urg |= c->tags;
+	}
+	x = 0;
+	for (i = 0; i < LENGTH(tags); i++) {
+		w = TEXTW(tags[i]);
+		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
+		if (occ & 1 << i)
+			drw_rect(drw, x + boxs, boxs, boxw, boxw,
+				m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
+				urg & 1 << i);
+		x += w;
+	}
+	w = TEXTW(m->ltsymbol);
+	drw_setscheme(drw, scheme[SchemeNorm]);
+	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
 
-    /* Draw tags centered */
-    x = center_x; // Start x at the centered position
-    for (i = 0; i < LENGTH(tagsalt); i++) {
-        w = TEXTW(tagsalt[i]);
-        drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-        drw_text(drw, x, 0, w, bh, lrpad / 2, tagsalt[i], urg & 1 << i);
-        if (occ & 1 << i)
-            drw_rect(drw, x + boxs, boxs, boxw, boxw,
-                m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
-                urg & 1 << i);
-        x += w;
-    }
-
-    /* Draw status text on the right */
-    if (m == selmon) { /* Status is only drawn on selected monitor */
-        drw_setscheme(drw, scheme[SchemeNorm]);
-        tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
-        drw_text(drw, m->ww - tw, 0, tw, bh, 0, stext, 0);
-    }
-
-    /* Ensure layout symbol, tags, and status text do not overlap */
-    drw_map(drw, m->barwin, 0, 0, m->ww, bh);
- }
- 
+	if ((w = m->ww - tw - stw - x) > bh) {
+			drw_setscheme(drw, scheme[SchemeNorm]);
+			drw_rect(drw, x, 0, w, bh, 1, 1);
+	}
+	drw_map(drw, m->barwin, 0, 0, m->ww - stw, bh);
+}
 
 void
 drawbars(void)
@@ -1171,25 +1146,6 @@ keypress(XEvent *e)
 		&& CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
 		&& keys[i].func)
 			keys[i].func(&(keys[i].arg));
-}
-
-void
-keyrelease(XEvent *e)
-{
-	unsigned int i;
-	KeySym keysym;
-	XKeyEvent *ev;
-
-	ev = &e->xkey;
-	keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
-
-    for (i = 0; i < LENGTH(keys); i++)
-        if (momentaryalttags
-        && keys[i].func && keys[i].func == togglealttag
-        && selmon->alttag
-        && (keysym == keys[i].keysym
-        || CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)))
-            keys[i].func(&(keys[i].arg));
 }
 
 void
@@ -1940,7 +1896,6 @@ void
 tile(Monitor *m)
 {
 	unsigned int i, n, h, r, g = 0, mw, my, ty;
-
 	Client *c;
 
 	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
@@ -1949,30 +1904,20 @@ tile(Monitor *m)
 
 	if (n > m->nmaster)
 		mw = m->nmaster ? (m->ww - (g = gappx)) * m->mfact : 0;
-
 	else
 		mw = m->ww;
 	for (i = my = ty = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++)
 		if (i < m->nmaster) {
-			r = MIN(n, m->nmaster) - i;
-			h = (m->wh - my - gappx * (r - 1)) / r;
+			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
 			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), 0);
 			if (my + HEIGHT(c) < m->wh)
 				my += HEIGHT(c) + gappx;
 		} else {
 			r = n - i;
-			h = (m->wh - ty - gappx * (r-1)) / r;
-			resize(c, m->wx + mw + g, m->wy + ty, m->ww - mw - g - (2*c->bw), h - (2*c->bw), 0);
-			if (ty + HEIGHT(c) < m->wh)
+			h = (m->wh - ty - gappx * (r - 1)) / r;
+			resize(c, m->wx + mw + g, m->wy + ty, m->ww - mw - g - (2*c->bw), h - (2*c->bw), False);			                        if (ty + HEIGHT(c) < m->wh)
 				ty += HEIGHT(c) + gappx;
 		}
-}
-
-void
-togglealttag(const Arg *arg)
-{
-	selmon->alttag = !selmon->alttag;
-	drawbar(selmon);
 }
 
 void

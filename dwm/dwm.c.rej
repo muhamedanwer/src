@@ -1,6 +1,18 @@
 --- dwm.c
 +++ dwm.c
-@@ -727,15 +725,8 @@ drawbar(Monitor *m)
+@@ -439,10 +439,8 @@ buttonpress(XEvent *e)
+ 			arg.ui = 1 << i;
+ 		} else if (ev->x < x + blw)
+ 			click = ClkLtSymbol;
+-		else if (ev->x > selmon->ww - TEXTW(stext))
+-			click = ClkStatusText;
+ 		else
+-			click = ClkWinTitle;
++			click = ClkStatusText;
+ 	} else if ((c = wintoclient(ev->window))) {
+ 		focus(c);
+ 		restack(selmon);
+@@ -729,15 +727,8 @@ drawbar(Monitor *m)
  	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
  
  	if ((w = m->ww - sw - x) > bh) {
