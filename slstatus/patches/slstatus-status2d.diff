@@ -1,0 +1,134 @@
+diff --git a/slstatus.c b/slstatus.c
+index xxxxxxx..xxxxxxx 100644
+--- a/slstatus.c
++++ b/slstatus.c
+@@ -17,6 +17,7 @@
+ #include <string.h>
+ #include <time.h>
+ #include <unistd.h>
++#include <X11/Xlib.h>
+ 
+ #include "arg.h"
+ #include "slstatus.h"
+@@ -142,6 +143,105 @@ main(int argc, char *argv[])
+ 	return 0;
+ }
+ 
++/* Parse and process text containing color codes */
++static void
++pstatus(char *str)
++{
++	static char status[MAXLEN];
++	char *s, *p;
++	char clr[8];
++	int i, w, d, e;
++	int state = 0;
++	XGCValues gcv;
++	GC gc;
++	Window root;
++	Display *dpy;
++
++	if (!(dpy = XOpenDisplay(NULL)))
++		die("XOpenDisplay: Failed to open display\n");
++	
++	root = DefaultRootWindow(dpy);
++	gc = XCreateGC(dpy, root, 0, &gcv);
++	
++	strlcpy(status, str, sizeof(status));
++	s = p = status;
++	i = 0;
++	
++	while (*p) {
++		if (*p == '^' && *(p+1) == 'c' && *(p+2) == '#') { /* Color code for foreground */
++			p += 3;
++			memcpy(clr, p, 7);
++			clr[7] = '\0';
++			XSetForeground(dpy, gc, strtoul(clr, NULL, 16));
++			p += 7;
++			state |= 1;
++			continue;
++		} else if (*p == '^' && *(p+1) == 'b' && *(p+2) == '#') { /* Color code for background */
++			p += 3;
++			memcpy(clr, p, 7);
++			clr[7] = '\0';
++			XSetBackground(dpy, gc, strtoul(clr, NULL, 16));
++			p += 7;
++			state |= 2;
++			continue;
++		} else if (*p == '^' && *(p+1) == 'd') { /* Reset colors to default */
++			p += 2;
++			if (state & 1)
++				XSetForeground(dpy, gc, 0xFFFFFF);
++			if (state & 2)
++				XSetBackground(dpy, gc, 0x000000);
++			state = 0;
++			continue;
++		}
++		
++		/* Copy regular characters */
++		status[i++] = *p++;
++	}
++	status[i] = '\0';
++	
++	/* Set the root window name */
++	XStoreName(dpy, root, status);
++	XFlush(dpy);
++	
++	XFreeGC(dpy, gc);
++	XCloseDisplay(dpy);
++}
++
++/* Function to strip color codes from text */
++static void
++strip_status(char *str)
++{
++	char *s, *d;
++	int i, j;
++	
++	for (s = d = str; *s; s++) {
++		if (*s == '^' && (*(s+1) == 'c' || *(s+1) == 'b') && *(s+2) == '#') {
++			s += 9; /* Skip ^c#RRGGBB */
++			continue;
++		} else if (*s == '^' && *(s+1) == 'd') {
++			s += 1; /* Skip ^d */
++			continue;
++		}
++		*d++ = *s;
++	}
++	*d = '\0';
++}
++
++/* The updated setstatus function that processes color codes */
++static void
++setstatus(char *str)
++{
++	Display *dpy;
++	Window root;
++	XTextProperty prop;
++	
++	if (!(dpy = XOpenDisplay(NULL))) {
++		strip_status(str);
++		fprintf(stderr, "slstatus: %s\n", str);
++		return;
++	}
++	
++	pstatus(str);
++}
++
+ #ifdef __OpenBSD__
+ /* battery */
+ const char *
+diff --git a/config.mk b/config.mk
+index xxxxxxx..xxxxxxx 100644
+--- a/config.mk
++++ b/config.mk
+@@ -15,7 +15,7 @@ FREETYPEINC = /usr/include/freetype2
+ X11INC = /usr/X11R6/include
+ X11LIB = /usr/X11R6/lib
+ 
+-# flags
++# flags (added -lX11 for X11 library)
+ CPPFLAGS = -I$(X11INC) -D_DEFAULT_SOURCE
+ CFLAGS   = -std=c99 -pedantic -Wall -Wextra -Os
+-LDFLAGS  = -L$(X11LIB) -s
++LDFLAGS  = -L$(X11LIB) -lX11 -s
