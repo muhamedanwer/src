@@ -25,24 +25,24 @@ static const char unknown_str[] = "n/a";
 static const struct arg args[] = {
     /* function format          argument */
     
-    /* CPU with blue background - compact style */
-    { cpu_perc, "^b"BLUE"^^c"BG"^ CPU ^c"FG"^%2s%% ^d^", NULL },
+    /* CPU with blue color and icon */
+    { cpu_perc, "^c"BLUE"^ 󰻠 CPU %2s%% ^c"FG"^│ ", NULL },
     
-    /* RAM with yellow background */
-    { ram_perc, "^b"YELLOW"^^c"BG"^ RAM ^c"FG"^%2s%% ^d^", NULL },
+    /* RAM with yellow color and icon */
+    { ram_perc, "^c"YELLOW"^ 󰍛 RAM %2s%% ^c"FG"^│ ", NULL },
     
-    /* WiFi with magenta background */
-    { wifi_perc, "^b"MAGENTA"^^c"BG"^ SLR ^c"FG"^%2s%% ^d^", "wlan0" },
+    /* WiFi with magenta color and icon */
+    { wifi_perc, "^c"MAGENTA"^ 󰖩 WiFi %2s%% ^c"FG"^│ ", "wlan0" },
     
-    /* Disk/Battery green section */
-    { disk_free, "^b"GREEN"^^c"BG"^ D ^c"FG"^%s ^d^", "/" },
+    /* Disk with green color and icon */
+    { disk_free, "^c"GREEN"^ 󰋊 %s ^c"FG"^│ ", "/" },
     
-    /* Date with orange background */
-    { datetime, "^b"ORANGE"^^c"BG"^ %s ^d^", "%a %d %b" },
+    /* Date with orange color and icon */
+    { datetime, "^c"ORANGE"^ 󰃭 %s ^c"FG"^│ ", "%a %d %b" },
     
-    /* Time with orange background */
-    { datetime, "^b"ORANGE"^^c"BG"^ %s ^d^", "%H:%M" },
+    /* Time with cyan color and icon */
+    { datetime, "^c"CYAN"^ 󱑆 %s ^c"FG"^", "%H:%M" },
     
     /* Add empty space for system tray padding */
-    { run_command, "^f0^^c"BG"^ %s", "echo '     '" },
+    { run_command, " %s", "echo '     '" },
 };
