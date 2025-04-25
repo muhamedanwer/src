@@ -34,5 +34,5 @@ Feel free to:
 [Specify the license under which this project is available]
 
 ## Contact
-- Muhammad Anwer - [muhamedanwe@outlook.com]
+- Muhammad Anwer - [muhamedanwer@outlook.com]
 - Project Link: [https://github.com/muhamedanwer/src](https://github.com/muhamedanwer/src)
