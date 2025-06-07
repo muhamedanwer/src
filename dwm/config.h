@@ -11,8 +11,8 @@ static const int systraypinningfailfirst = 1;   /* display on first monitor if p
 static const int showsystray        = 1;        /* show systray */
 static const int showbar            = 1;        /* show bar */
 static const int topbar             = 1;        /* top bar */
-static const char *fonts[]          = { "JetBrainsMono Nerd Font:size=11" }; /* increased font size */
-static const char dmenufont[]       = "JetBrainsMono Nerd Font:size=11";     /* increased font size */
+static const char *fonts[]          = { "JetBrainsMono Nerd Font:size=12" }; /* increased font size */
+static const char dmenufont[]       = "JetBrainsMono Nerd Font:size=12";     /* increased font size */
 
 /* Gruvbox Dark Theme - preserved from original */
 static const char col_bg[]          = "#282828"; /* background */
@@ -75,7 +75,7 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod4Mask  
+#define MODKEY Mod4Mask  /* Changed to Super key (Windows key) for easier access */
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -88,7 +88,7 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0";
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_bg, "-nf", col_fg_dim, "-sb", col_accent, "-sf", col_fg, NULL };
-static const char *roficmd[] = { "rofi", "-show", "drun", NULL };
+static const char *roficmd[] = { "rofi", "-show", "drun", "-theme", "gruvbox-dark", NULL };
 static const char *termcmd[] = { "alacritty", NULL };
 static const char *browser[] = { "chromium", NULL };
 static const char *vscode[] = { "code", NULL };
@@ -107,7 +107,7 @@ static const char *lock_screen[] = { "slock", NULL };
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
 	/* Program launchers - grouped for clarity */
-	{ MODKEY,                       XK_p,  spawn,          {.v = roficmd } },
+	{ MODKEY,                       XK_space,  spawn,          {.v = roficmd } },     /* changed to space for easier access */
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_w,      spawn,          {.v = browser } },
 	{ MODKEY,                       XK_c,      spawn,          {.v = vscode } },
@@ -175,3 +175,4 @@ static const Button buttons[] = {
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
+
