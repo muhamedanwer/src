@@ -1,0 +1,197 @@
+/* ===== GENERAL BAR STYLING ===== */
+* {
+  border: none;
+  border-radius: 0px;
+  font-family: "SF Pro Display", "JetBrainsMono Nerd Font", sans-serif;
+  font-size: 12px;
+  min-height: 0;
+}
+
+window#waybar {
+  background-color: rgba(40, 40, 43, 0.85);
+  color: #ffffff;
+  transition-property: background-color;
+  transition-duration: 0.2s;
+}
+
+window#waybar.hidden {
+  opacity: 0.2;
+}
+
+/* ===== MODULE CONTAINERS ===== */
+#workspaces,
+#custom-launcher,
+#tray,
+#pulseaudio,
+#network,
+#battery,
+#clock {
+  padding: 0 8px;
+  margin: 0 2px;
+  color: #ffffff;
+  background-color: transparent;
+}
+
+/* ===== CUSTOM LAUNCHER ===== */
+#custom-launcher {
+  font-size: 14px;
+  padding: 0 12px;
+  margin-left: 8px;
+  color: #ffffff;
+}
+
+#custom-launcher:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+/* ===== WORKSPACES - macOS DOTS IMPLEMENTATION ===== */
+#workspaces {
+  padding: 0 4px;
+  background-color: transparent;
+}
+
+#workspaces button {
+  padding: 0 4px;
+  color: rgba(255, 255, 255, 0.6);
+  background-color: transparent;
+  font-size: 16px;
+  border: none;
+  box-shadow: none;
+  text-shadow: none;
+  min-width: 0;
+}
+
+#workspaces button.active {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+#workspaces button:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+#workspaces button.urgent {
+  color: #ff5f5f;
+  background-color: rgba(255, 95, 95, 0.2);
+}
+
+/* ===== SYSTEM TRAY ===== */
+#tray {
+  padding: 0 8px;
+}
+
+#tray > .passive {
+  -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+  -gtk-icon-effect: highlight;
+}
+
+/* ===== PULSEAUDIO (VOLUME) ===== */
+#pulseaudio {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+#pulseaudio.muted {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+#pulseaudio:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+/* ===== NETWORK ===== */
+#network {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+#network.disconnected {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+#network:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+/* ===== BATTERY ===== */
+#battery {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+#battery.charging, #battery.plugged {
+  color: #ffffff;
+}
+
+#battery.critical:not(.charging) {
+  color: #ff5f5f;
+  background-color: rgba(255, 95, 95, 0.2);
+  animation-name: blink;
+  animation-duration: 0.5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+#battery:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+@keyframes blink {
+  to {
+    color: #ffffff;
+    background-color: transparent;
+  }
+}
+
+/* ===== CLOCK ===== */
+#clock {
+  font-weight: 500;
+  color: #ffffff;
+  padding: 0 12px;
+  margin-right: 8px;
+}
+
+#clock:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+/* ===== TOOLTIPS ===== */
+tooltip {
+  border-radius: 8px;
+  padding: 8px 12px;
+  background-color: rgba(40, 40, 43, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+tooltip label {
+  color: #ffffff;
+  font-family: "SF Pro Display", "JetBrainsMono Nerd Font", sans-serif;
+}
+
+/* ===== SMOOTH TRANSITIONS ===== */
+#custom-launcher,
+#workspaces button,
+#tray,
+#pulseaudio,
+#network,
+#battery,
+#clock {
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
