@@ -1,0 +1,91 @@
+/* ===== GENERAL STYLING ===== */
+window {
+    margin: 0px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background-color: rgba(40, 40, 43, 0.95);
+    font-family: "SF Pro Display", "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 12px;
+}
+
+/* ===== INPUT BAR ===== */
+#input {
+    margin: 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    background-color: rgba(60, 60, 65, 0.8);
+    font-size: 12px;
+}
+
+#input:focus {
+    background-color: rgba(70, 70, 75, 0.9);
+}
+
+/* ===== SCROLLABLE LIST ===== */
+#scroll {
+    margin: 0px 10px;
+    border: none;
+}
+
+#inner-box {
+    margin: 0px;
+    border: none;
+}
+
+#outer-box {
+    margin: 10px;
+    border: none;
+}
+
+/* ===== LIST ITEMS ===== */
+#entry {
+    margin: 2px 0px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    background-color: transparent;
+}
+
+#entry:selected {
+    color: #ffffff;
+    background-color: rgba(23, 147, 209, 0.3); /* Arch blue tint */
+    border: none;
+}
+
+#entry:selected #text {
+    color: #ffffff;
+}
+
+/* ===== TEXT ELEMENTS ===== */
+#text {
+    margin: 0px;
+    padding: 0px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+#text:selected {
+    color: #ffffff;
+}
+
+/* ===== IMAGE ELEMENTS ===== */
+#img {
+    margin-right: 8px;
+}
+
+/* ===== PLACEHOLDER TEXT ===== */
+#placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ===== SELECTION HIGHLIGHT ===== */
+#selected {
+    background-color: rgba(23, 147, 209, 0.3);
+}
+
+/* ===== EXPANDER ARROW ===== */
+#expander-box {
+    background-color: rgba(40, 40, 43, 0.95);
+}

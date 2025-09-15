@@ -1,0 +1,84 @@
+/* ===== GENERAL STYLING ===== */
+* {
+    border: none;
+    font-family: "SF Pro Display", "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 12px;
+    min-height: 0;
+}
+
+window {
+    background-color: rgba(40, 40, 43, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* ===== INPUT FIELD ===== */
+#input {
+    margin: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: #ffffff;
+    background-color: rgba(60, 60, 65, 0.8);
+    font-size: 12px;
+}
+
+#input:focus {
+    background-color: rgba(70, 70, 75, 0.9);
+}
+
+/* ===== SCROLLABLE CONTENT ===== */
+#scroll {
+    margin: 0px 10px;
+    border: none;
+}
+
+#inner-box {
+    margin: 0px;
+    border: none;
+}
+
+#outer-box {
+    margin: 10px;
+    border: none;
+}
+
+/* ===== LIST ENTRIES ===== */
+#entry {
+    margin: 2px 0px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    background-color: transparent;
+    transition: background-color 0.2s ease-in-out;
+}
+
+#entry:selected {
+    color: #ffffff;
+    background-color: rgba(23, 147, 209, 0.3);
+    border: none;
+}
+
+#entry:selected #text {
+    color: #ffffff;
+}
+
+/* ===== TEXT ===== */
+#text {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0px;
+    padding: 0px;
+}
+
+#text:selected {
+    color: #ffffff;
+}
+
+/* ===== IMAGES ===== */
+#img {
+    margin-right: 8px;
+}
+
+/* ===== PLACEHOLDER ===== */
+#placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
