@@ -2,8 +2,8 @@
   // General Waybar settings
   "layer": "top",
   "position": "top",
-  "height": 24,
-  "spacing": 4,
+  "height": 28,
+  "spacing": 2,
   "margin-top": 0,
   "margin-bottom": 6,
   "margin-left": 0,
@@ -15,35 +15,71 @@
     "hyprland/workspaces"
   ],
   "modules-right": [
-    "tray",
+    "custom/keyboard",
+    "cpu",
+    "memory",
+    "temperature",
     "pulseaudio",
     "network",
     "battery",
-    "clock"
+    "clock",
+    "tray"
   ],
   
-  // Custom application launcher
+  // Custom application launcher with Arch Linux icon
   "custom/launcher": {
     "format": "",
     "tooltip": false,
     "on-click": "wofi --show drun"
   },
   
-  // Workspaces module - macOS dots implementation
+  // Keyboard layout indicator for Hyprland
+  "custom/keyboard": {
+    "format": "⌨",
+    "exec": "~/.config/waybar/keyboard-layout.sh",
+    "interval": 2,
+    "tooltip-format": "Layout: {}"
+  },
+  
+  // CPU usage
+  "cpu": {
+    "format": " {usage}%",
+    "interval": 3,
+    "tooltip-format": "CPU: {usage}%"
+  },
+  
+  // Memory usage
+  "memory": {
+    "format": " {percentage}%",
+    "interval": 3,
+    "tooltip-format": "RAM: {percentage}%"
+  },
+  
+  // Temperature
+  "temperature": {
+    "format": " {temperatureC}°C",
+    "critical-threshold": 80,
+    "interval": 5,
+    "tooltip-format": "Temp: {temperatureC}°C"
+  },
+  
+  // Hyprland workspaces module
   "hyprland/workspaces": {
     "format": "{icon}",
     "format-icons": {
       "default": "○",
-      "active": "●",
+      "active": "●", 
       "urgent": "◉"
     },
     "on-click": "activate",
+    "on-scroll-up": "hyprctl dispatch workspace e+1",
+    "on-scroll-down": "hyprctl dispatch workspace e-1",
     "all-outputs": true
   },
   
   // System tray
   "tray": {
-    "icon-size": 14,
+    "icon-size": 16,
     "spacing": 8
   },
   
@@ -56,7 +92,7 @@
     },
     "scroll-step": 5,
     "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-    "tooltip-format": "{volume}%"
+    "tooltip-format": "Volume: {volume}%"
   },
   
   // Network
@@ -64,7 +100,7 @@
     "format-wifi": "",
     "format-ethernet": "",
     "format-disconnected": "",
-    "tooltip-format": "{ifname}\n{ipaddr}\n{essid}",
+    "tooltip-format": "{ifname} - {essid}",
     "on-click": "nm-connection-editor"
   },
   
@@ -75,7 +111,7 @@
       "charging": ["", "", "", "", ""],
       "default": ["", "", "", "", ""]
     },
-    "tooltip-format": "{capacity}% ({time})",
+    "tooltip-format": "Battery: {capacity}%",
     "states": {
       "warning": 20,
       "critical": 10
@@ -84,7 +120,7 @@
   
   // Clock
   "clock": {
-    "format": "{:%H:%M}",
+    "format": "{:%a %d %b %H:%M }",
     "tooltip-format": "{:%A, %B %d, %Y}",
     "interval": 30
   }
